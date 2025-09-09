@@ -1,0 +1,15 @@
+# Core Flask dependencies
+Flask==3.0.0
+Flask-CORS==4.0.0
+werkzeug==3.0.0
+
+# Production server
+gunicorn==21.2.0
+
+# File processing and bioinformatics
+pyfastx==2.1.0
+biopython==1.83
+numpy==1.25.2
+
+# Development
+python-dotenv==1.0.0

@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  edna-app:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - DATABASE_URL=sqlite:///edna_biodiversity.db
+      - UPLOAD_FOLDER=/app/frontend/static/uploads
+      - MAX_CONTENT_LENGTH=52428800  # 50MB
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - edna-database:/app/database
+      - edna-uploads:/app/frontend/static/uploads
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.25'
+
+volumes:
+  edna-database:
+    driver: local
+  edna-uploads:
+    driver: local
