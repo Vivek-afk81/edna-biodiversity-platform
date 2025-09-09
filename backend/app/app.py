@@ -29,6 +29,8 @@ static_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../fron
 
 # If your app.py is inside backend/app/
 # ../../ means: backend/app → backend → edna-biodiversity-platform
+
+
 # then into frontend/templates ✅
 
 
