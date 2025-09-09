@@ -14,14 +14,15 @@ from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from datetime import datetime
 
-# Add the backend directory to Python path
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+# Add the project root to Python path for proper imports
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
+sys.path.insert(0, project_root)
 
-# Fixed imports - use relative imports within backend package
-from .file_processor import FastaProcessor
-from .classifier import MockSpeciesClassifier
-from .biodiversity import BiodiversityCalculator
-from .database import DatabaseManager
+# Import modules using absolute paths from project root
+from backend.app.file_processor import FastaProcessor
+from backend.app.classifier import MockSpeciesClassifier
+from backend.app.biodiversity import BiodiversityCalculator
+from backend.app.database import DatabaseManager
 
 # Correct paths for templates and static
 template_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../frontend/templates'))

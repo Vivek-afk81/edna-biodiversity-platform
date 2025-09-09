@@ -1,18 +1,17 @@
-upload_html = '''
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Upload eDNA Sample - Biodiversity Analysis Platform</title>
-    
+
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
@@ -21,13 +20,13 @@ upload_html = '''
             display: flex;
             flex-direction: column;
         }
-        
+
         .header {
             background: rgba(255, 255, 255, 0.95);
             padding: 1rem 2rem;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        
+
         .header-content {
             max-width: 1200px;
             margin: 0 auto;
@@ -35,13 +34,13 @@ upload_html = '''
             justify-content: space-between;
             align-items: center;
         }
-        
+
         .logo-section h1 {
             color: #2a5298;
             font-size: 1.8rem;
             font-weight: 700;
         }
-        
+
         .back-btn {
             background: #6c757d;
             color: white;
@@ -55,12 +54,12 @@ upload_html = '''
             display: inline-block;
             transition: all 0.3s ease;
         }
-        
+
         .back-btn:hover {
             background: #5a6268;
             transform: translateY(-2px);
         }
-        
+
         .main-content {
             flex: 1;
             display: flex;
@@ -68,7 +67,7 @@ upload_html = '''
             justify-content: center;
             padding: 2rem 1rem;
         }
-        
+
         .upload-container {
             background: rgba(255, 255, 255, 0.95);
             padding: 3rem;
@@ -79,21 +78,21 @@ upload_html = '''
             width: 100%;
             text-align: center;
         }
-        
+
         .upload-title {
             color: #2a5298;
             font-size: 2.2rem;
             font-weight: 700;
             margin-bottom: 1rem;
         }
-        
+
         .upload-subtitle {
             color: #666;
             font-size: 1.1rem;
             margin-bottom: 2rem;
             line-height: 1.6;
         }
-        
+
         .upload-zone {
             border: 3px dashed #2a5298;
             border-radius: 15px;
@@ -105,37 +104,37 @@ upload_html = '''
             position: relative;
             overflow: hidden;
         }
-        
+
         .upload-zone:hover {
             border-color: #1e3c72;
             background: rgba(42, 82, 152, 0.1);
             transform: translateY(-5px);
         }
-        
+
         .upload-zone.dragover {
             border-color: #28a745;
             background: rgba(40, 167, 69, 0.1);
         }
-        
+
         .upload-icon {
             font-size: 4rem;
             color: #2a5298;
             margin-bottom: 1rem;
         }
-        
+
         .upload-text {
             font-size: 1.2rem;
             color: #2a5298;
             font-weight: 600;
             margin-bottom: 0.5rem;
         }
-        
+
         .upload-hint {
             color: #666;
             font-size: 0.9rem;
             margin-bottom: 1rem;
         }
-        
+
         .file-input {
             position: absolute;
             width: 100%;
@@ -145,7 +144,7 @@ upload_html = '''
             left: 0;
             top: 0;
         }
-        
+
         .browse-btn {
             background: #28a745;
             color: white;
@@ -158,12 +157,12 @@ upload_html = '''
             transition: all 0.3s ease;
             margin: 1rem 0;
         }
-        
+
         .browse-btn:hover {
             background: #218838;
             transform: translateY(-2px);
         }
-        
+
         .file-info {
             background: #e8f5e8;
             padding: 1rem;
@@ -171,18 +170,18 @@ upload_html = '''
             margin: 1rem 0;
             display: none;
         }
-        
+
         .file-name {
             font-weight: 600;
             color: #155724;
             margin-bottom: 0.5rem;
         }
-        
+
         .file-details {
             color: #155724;
             font-size: 0.9rem;
         }
-        
+
         .analyze-btn {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -197,22 +196,22 @@ upload_html = '''
             opacity: 0.5;
             pointer-events: none;
         }
-        
+
         .analyze-btn.enabled {
             opacity: 1;
             pointer-events: auto;
         }
-        
+
         .analyze-btn.enabled:hover {
             transform: translateY(-3px);
             box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
         }
-        
+
         .progress-container {
             display: none;
             margin: 2rem 0;
         }
-        
+
         .progress-bar {
             width: 100%;
             height: 8px;
@@ -220,20 +219,20 @@ upload_html = '''
             border-radius: 4px;
             overflow: hidden;
         }
-        
+
         .progress-fill {
             height: 100%;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             width: 0%;
             transition: width 0.3s ease;
         }
-        
+
         .progress-text {
             margin-top: 0.5rem;
             color: #666;
             font-weight: 600;
         }
-        
+
         .results-preview {
             display: none;
             background: #f8f9fa;
@@ -242,7 +241,7 @@ upload_html = '''
             margin: 2rem 0;
             text-align: left;
         }
-        
+
         .results-title {
             color: #2a5298;
             font-size: 1.3rem;
@@ -250,33 +249,33 @@ upload_html = '''
             margin-bottom: 1rem;
             text-align: center;
         }
-        
+
         .quick-stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
             gap: 1rem;
             margin-bottom: 2rem;
         }
-        
+
         .quick-stat {
             text-align: center;
             padding: 1rem;
             background: white;
             border-radius: 8px;
         }
-        
+
         .quick-stat-number {
             font-size: 1.8rem;
             font-weight: 700;
             color: #2a5298;
         }
-        
+
         .quick-stat-label {
             font-size: 0.8rem;
             color: #666;
             text-transform: uppercase;
         }
-        
+
         .view-dashboard-btn {
             background: #17a2b8;
             color: white;
@@ -290,12 +289,12 @@ upload_html = '''
             display: inline-block;
             transition: all 0.3s ease;
         }
-        
+
         .view-dashboard-btn:hover {
             background: #138496;
             transform: translateY(-2px);
         }
-        
+
         .error-message {
             background: #f8d7da;
             color: #721c24;
@@ -305,7 +304,7 @@ upload_html = '''
             display: none;
             border: 1px solid #f5c6cb;
         }
-        
+
         .info-box {
             background: rgba(23, 162, 184, 0.1);
             border-left: 4px solid #17a2b8;
@@ -313,29 +312,29 @@ upload_html = '''
             margin: 2rem 0;
             border-radius: 0 8px 8px 0;
         }
-        
+
         .info-title {
             font-weight: 600;
             color: #17a2b8;
             margin-bottom: 0.5rem;
         }
-        
+
         .info-text {
             color: #666;
             font-size: 0.9rem;
             line-height: 1.5;
         }
-        
+
         @media (max-width: 768px) {
             .upload-container {
                 padding: 2rem 1rem;
                 margin: 1rem;
             }
-            
+
             .upload-zone {
                 padding: 2rem 1rem;
             }
-            
+
             .quick-stats {
                 grid-template-columns: repeat(2, 1fr);
             }
@@ -411,137 +410,137 @@ upload_html = '''
 
     <script>
         let selectedFile = null;
-        
+
         // File selection and drag-drop handling
         const uploadZone = document.getElementById('upload-zone');
         const fileInput = document.getElementById('file-input');
         const fileInfo = document.getElementById('file-info');
         const analyzeBtn = document.getElementById('analyze-btn');
-        
+
         // Click to select file
         uploadZone.addEventListener('click', (e) => {
             if (e.target !== fileInput) {
                 fileInput.click();
             }
         });
-        
+
         // File selection
         fileInput.addEventListener('change', handleFileSelection);
-        
+
         // Drag and drop
         uploadZone.addEventListener('dragover', (e) => {
             e.preventDefault();
             uploadZone.classList.add('dragover');
         });
-        
+
         uploadZone.addEventListener('dragleave', (e) => {
             e.preventDefault();
             uploadZone.classList.remove('dragover');
         });
-        
+
         uploadZone.addEventListener('drop', (e) => {
             e.preventDefault();
             uploadZone.classList.remove('dragover');
-            
+
             const files = e.dataTransfer.files;
             if (files.length > 0) {
                 fileInput.files = files;
                 handleFileSelection();
             }
         });
-        
+
         function handleFileSelection() {
             const file = fileInput.files[0];
             if (!file) return;
-            
+
             selectedFile = file;
-            
+
             // Validate file type
             const validExtensions = ['.fasta', '.fa', '.fas', '.txt'];
             const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
-            
+
             if (!validExtensions.includes(fileExtension)) {
                 showError('Invalid file type. Please upload a FASTA file (.fasta, .fa, .fas, .txt)');
                 return;
             }
-            
+
             // Show file info
             document.getElementById('file-name').textContent = file.name;
-            document.getElementById('file-details').textContent = 
+            document.getElementById('file-details').textContent =
                 `Size: ${(file.size / 1024 / 1024).toFixed(2)} MB | Type: ${file.type || 'FASTA'}`;
-            
+
             fileInfo.style.display = 'block';
             analyzeBtn.classList.add('enabled');
-            
+
             hideError();
         }
-        
+
         async function startAnalysis() {
             if (!selectedFile) {
                 showError('Please select a file first');
                 return;
             }
-            
+
             const progressContainer = document.getElementById('progress-container');
             const progressFill = document.getElementById('progress-fill');
             const progressText = document.getElementById('progress-text');
             const resultsPreview = document.getElementById('results-preview');
-            
+
             // Show progress
             progressContainer.style.display = 'block';
             analyzeBtn.style.display = 'none';
             resultsPreview.style.display = 'none';
-            
+
             try {
                 // Prepare form data
                 const formData = new FormData();
                 formData.append('file', selectedFile);
-                
+
                 // Start analysis
                 progressText.textContent = 'Uploading file...';
                 progressFill.style.width = '20%';
-                
+
                 const response = await fetch('/api/analyze', {
                     method: 'POST',
                     body: formData
                 });
-                
+
                 progressText.textContent = 'Processing sequences...';
                 progressFill.style.width = '60%';
-                
+
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
-                
+
                 const result = await response.json();
-                
+
                 progressText.textContent = 'Analysis complete!';
                 progressFill.style.width = '100%';
-                
+
                 // Show results after a brief delay
                 setTimeout(() => {
                     showResults(result);
                 }, 1000);
-                
+
             } catch (error) {
                 console.error('Analysis failed:', error);
                 showError(`Analysis failed: ${error.message}`);
-                
+
                 // Reset UI
                 progressContainer.style.display = 'none';
                 analyzeBtn.style.display = 'inline-block';
             }
         }
-        
+
         function showResults(result) {
             const progressContainer = document.getElementById('progress-container');
             const resultsPreview = document.getElementById('results-preview');
             const quickStats = document.getElementById('quick-stats');
-            
+
             // Hide progress, show results
             progressContainer.style.display = 'none';
             resultsPreview.style.display = 'block';
-            
+
             // Populate quick stats
             quickStats.innerHTML = `
                 <div class="quick-stat">
@@ -562,33 +561,16 @@ upload_html = '''
                 </div>
             `;
         }
-        
+
         function showError(message) {
             const errorElement = document.getElementById('error-message');
             errorElement.textContent = message;
             errorElement.style.display = 'block';
         }
-        
+
         function hideError() {
             document.getElementById('error-message').style.display = 'none';
         }
     </script>
 </body>
 </html>
-'''
-
-print("✅ File Upload Page created")
-print("📤 Upload Features:")
-print("  - Drag & drop file upload")
-print("  - File validation for FASTA formats")
-print("  - Real-time progress tracking")
-print("  - Quick results preview")
-print("  - Mobile-responsive design")
-print("  - Error handling and user feedback")
-
-# Save the content
-with open('/tmp/upload.html', 'w') as f:
-    f.write(upload_html)
-
-lines_count = len(upload_html.split('\n'))
-print(f"\n📄 File created: {lines_count} lines of HTML/CSS/JavaScript")
