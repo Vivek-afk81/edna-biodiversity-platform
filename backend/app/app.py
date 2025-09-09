@@ -163,6 +163,10 @@ def dashboard_data():
         # Get biodiversity trends
         biodiversity_trends = db_manager.get_biodiversity_trends()
         
+        # Rename avg_shannon to shannon_values for frontend compatibility
+        if 'avg_shannon' in biodiversity_trends:
+            biodiversity_trends['shannon_values'] = biodiversity_trends.pop('avg_shannon')
+        
         return jsonify({
             'recent_analyses': recent_analyses,
             'species_distribution': species_distribution,
