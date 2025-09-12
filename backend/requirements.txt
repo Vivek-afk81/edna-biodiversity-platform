@@ -13,3 +13,35 @@ numpy==1.25.2
 
 # Development
 python-dotenv==1.0.0
+
+# =========================
+# Deep Learning & Modeling
+# =========================
+torch>=1.9.0         # PyTorch: core deep learning framework to build/train neural networks.
+torchvision          # PyTorch’s vision library (pretrained models, transforms). Sometimes used for embeddings or image-like data.
+transformers         # Hugging Face library: transformer models (e.g., BERT, GPT). Can process DNA sequences as text embeddings.
+
+# =========================
+# Machine Learning & Dimensionality Reduction
+# =========================
+scikit-learn>=1.0.0  # Classical ML (clustering, classification, metrics, model evaluation).
+umap-learn           # Dimensionality reduction (UMAP). Helps visualize or cluster high-dimensional DNA embeddings.
+
+# =========================
+# Bioinformatics
+# =========================
+biopython            # Bioinformatics toolkit: parsing FASTA/FASTQ, working with sequences, annotations, alignments.
+
+# =========================
+# Visualization
+# =========================
+matplotlib           # Basic plotting (loss curves, histograms, scatter plots).
+seaborn              # High-level statistical plots (heatmaps, abundance distributions).
+plotly               # Interactive/3D visualizations (dynamic biodiversity plots, dashboards).
+
+# =========================
+# Data Handling & Computation
+# =========================
+numpy>=1.21.0        # Numerical computing (arrays, matrices, vectorized math). Backbone of ML workflows.
+pandas>=1.3.0        # Data analysis/manipulation (tables, CSVs, abundance data management).
+scipy>=1.8.0         # Scientific computing (stats, optimizations, signal processing).
