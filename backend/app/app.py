@@ -8,6 +8,9 @@ from backend.app.embedding import SequenceEmbedder
 from backend.app.clustering import HDBSCANClusterer 
 from backend.annotator import Annotator
 from backend.app.classifier import UnsupervisedClassifier
+from backend.app.ai_pipeline.unsupervised import UnsupervisedLearningPipeline
+from backend.app.ai_pipeline.feature_extraction import FeatureExtractor
+
 
 # === Import Mock Fallback ===
 from backend.app.classifier import MockSpeciesClassifier 
