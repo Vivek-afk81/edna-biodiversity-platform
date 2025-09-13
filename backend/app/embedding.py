@@ -1,0 +1,1 @@
+from .ai_pipeline.embedding_generator import EmbeddingGenerator as SequenceEmbedder

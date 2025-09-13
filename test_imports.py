@@ -10,10 +10,10 @@ except Exception as e:
     print(f"❌ FastaProcessor import failed: {e}")
 
 try:
-    from app.classifier import MockSpeciesClassifier
-    print("✅ MockSpeciesClassifier import successful")
+    from app.classifier import UnsupervisedClassifier
+    print("✅ UnsupervisedClassifier import successful")
 except Exception as e:
-    print(f"❌ MockSpeciesClassifier import failed: {e}")
+    print(f"❌ UnsupervisedClassifier import failed: {e}")
 
 try:
     from app.biodiversity import BiodiversityCalculator
@@ -28,7 +28,7 @@ except Exception as e:
     print(f"❌ DatabaseManager import failed: {e}")
 
 try:
-    from app.app import app
+    from backend.app.app import app
     print("✅ Flask app import successful")
 except Exception as e:
     print(f"❌ Flask app import failed: {e}")

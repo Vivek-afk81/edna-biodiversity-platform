@@ -53,3 +53,42 @@ class UnsupervisedClassifier:
         
         print(f"✅ Discovered {len(results)} OTUs.")
         return results
+
+class MockSpeciesClassifier:
+    """
+    Mock classifier for fallback when AI pipeline fails.
+    Returns dummy classification results.
+    """
+
+    def __init__(self):
+        pass
+
+    def classify_sequences(self, sequences: list):
+        """
+        Returns mock classification results.
+
+        Args:
+            sequences (list of str): List of DNA sequences.
+
+        Returns:
+            dict: Mock classification results.
+        """
+        if not sequences:
+            return {}
+
+        # Create mock OTUs
+        num_sequences = len(sequences)
+        num_otus = max(1, num_sequences // 3)
+
+        results = {}
+        for i in range(num_otus):
+            otu_id = f"OTU_{i + 1}"
+            results[otu_id] = []
+
+        # Distribute sequences among OTUs
+        for i in range(num_sequences):
+            otu_idx = i % num_otus
+            otu_id = f"OTU_{otu_idx + 1}"
+            results[otu_id].append(i)
+
+        return results

@@ -5,11 +5,12 @@ import time
 
 # === Import AI Pipeline ===
 from backend.app.embedding import SequenceEmbedder
-from backend.app.clustering import HDBSCANClusterer
-from backend.app.annotation import TaxonomyAnnotator
+from backend.app.clustering import HDBSCANClusterer 
+from backend.annotator import Annotator
+from backend.app.classifier import UnsupervisedClassifier
 
 # === Import Mock Fallback ===
-from backend.app.classifier import MockSpeciesClassifier
+from backend.app.classifier import MockSpeciesClassifier 
 
 app = Flask(__name__)
 CORS(app)
@@ -17,7 +18,7 @@ CORS(app)
 # Initialize pipeline
 embedder = SequenceEmbedder()
 clusterer = HDBSCANClusterer()
-annotator = TaxonomyAnnotator()
+annotator = Annotator()
 
 
 # --- API Routes ---
