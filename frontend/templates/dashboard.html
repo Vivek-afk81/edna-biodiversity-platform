@@ -166,6 +166,7 @@
             border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.1);
             backdrop-filter: blur(10px);
+            margin-bottom: 2rem;
         }
 
         .section-title {
@@ -248,6 +249,54 @@
             border: 1px solid #f5c6cb;
         }
 
+        /* NEW STYLES FOR RESULTS SECTIONS */
+        .results-section {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            margin-bottom: 2rem;
+        }
+
+        .results-section h3 {
+            color: #2a5298;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .results-section pre {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.9rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .results-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .results-section li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .results-section li:last-child {
+            border-bottom: none;
+        }
+
+        .results-section span {
+            font-weight: 600;
+            color: #2a5298;
+        }
+
         @media (max-width: 768px) {
             .header-content {
                 flex-direction: column;
@@ -326,6 +375,22 @@
                 <div class="chart-title">📈 Biodiversity Trends (30 Days)</div>
                 <canvas id="trends-chart" class="chart-canvas"></canvas>
             </div>
+        </div>
+
+        <!-- NEW: Taxonomic Classification Results -->
+        <div id="classification-results" class="results-section">
+            <h3>🧬 Latest Taxonomic Classification</h3>
+            <pre id="classification-json">No analysis results yet. Upload a FASTA file to see taxonomic classifications here.</pre>
+        </div>
+
+        <!-- NEW: Biodiversity Metrics Results -->
+        <div id="metrics-results" class="results-section">
+            <h3>📊 Latest Biodiversity Metrics</h3>
+            <ul>
+                <li>Shannon Diversity: <span id="metric-shannon">–</span></li>
+                <li>Simpson Index: <span id="metric-simpson">–</span></li>
+                <li>Phylogenetic Diversity: <span id="metric-phylo">–</span></li>
+            </ul>
         </div>
 
         <!-- Recent Analyses -->

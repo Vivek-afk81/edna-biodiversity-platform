@@ -45,3 +45,6 @@ plotly               # Interactive/3D visualizations (dynamic biodiversity plots
 numpy>=1.21.0        # Numerical computing (arrays, matrices, vectorized math). Backbone of ML workflows.
 pandas>=1.3.0        # Data analysis/manipulation (tables, CSVs, abundance data management).
 scipy>=1.8.0         # Scientific computing (stats, optimizations, signal processing).
+
+sqlalchemy>=1.4.0
+requests>=2.25.0

@@ -9,25 +9,23 @@ class BiodiversityDashboard {
         this.charts = {};
         this.refreshInterval = 30000; // 30 seconds
         this.isLoading = false;
-
         this.init();
     }
 
     async init() {
         try {
             console.log('🚀 Initializing eDNA Biodiversity Dashboard...');
-
+            
             // Load initial data
             await this.loadDashboardData();
-
+            
             // Initialize charts
             this.initializeCharts();
-
+            
             // Set up auto-refresh
             this.setupAutoRefresh();
-
+            
             console.log('✅ Dashboard initialized successfully');
-
         } catch (error) {
             console.error('❌ Dashboard initialization failed:', error);
             this.showErrorMessage('Failed to initialize dashboard');
@@ -36,27 +34,25 @@ class BiodiversityDashboard {
 
     async loadDashboardData() {
         if (this.isLoading) return;
-
         this.isLoading = true;
-
+        
         try {
             const response = await fetch('/api/dashboard-data');
-
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
-
+            
             const data = await response.json();
-
+            
             // Update statistics
             this.updateStatistics(data.summary_stats);
-
+            
             // Update charts
             this.updateCharts(data);
-
+            
             // Update recent analyses table
             this.updateRecentAnalyses(data.recent_analyses);
-
+            
         } catch (error) {
             console.error('Failed to load dashboard data:', error);
             this.showErrorMessage('Failed to load dashboard data. Please check your connection.');
@@ -88,8 +84,7 @@ class BiodiversityDashboard {
 
         const timer = setInterval(() => {
             currentValue += increment;
-
-            if ((increment > 0 && currentValue >= targetValue) ||
+            if ((increment > 0 && currentValue >= targetValue) || 
                 (increment < 0 && currentValue <= targetValue)) {
                 currentValue = targetValue;
                 clearInterval(timer);
@@ -120,7 +115,7 @@ class BiodiversityDashboard {
                 datasets: [{
                     data: [],
                     backgroundColor: [
-                        '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4',
+                        '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', 
                         '#FFEAA7', '#DDA0DD', '#98D8C8', '#F7DC6F',
                         '#BB8FCE', '#85C1E9', '#F8C471', '#82E0AA'
                     ],
@@ -223,9 +218,7 @@ class BiodiversityDashboard {
                             text: 'Date',
                             font: { size: 14, weight: 'bold' }
                         },
-                        grid: {
-                            color: 'rgba(0, 0, 0, 0.1)'
-                        }
+                        grid: { color: 'rgba(0, 0, 0, 0.1)' }
                     },
                     y: {
                         title: {
@@ -234,9 +227,7 @@ class BiodiversityDashboard {
                             font: { size: 14, weight: 'bold' }
                         },
                         beginAtZero: true,
-                        grid: {
-                            color: 'rgba(0, 0, 0, 0.1)'
-                        }
+                        grid: { color: 'rgba(0, 0, 0, 0.1)' }
                     }
                 }
             }
@@ -249,19 +240,30 @@ class BiodiversityDashboard {
     }
 
     updateSpeciesChart(speciesData) {
-        if (!this.charts.species || !speciesData || !Array.isArray(speciesData)) {
+        if (!this.charts.species || !speciesData) {
             return;
         }
 
-        // Limit to top 10 species for readability
-        const topSpecies = speciesData.slice(0, 10);
+        // Handle both array and object formats
+        let processedData = [];
+        if (Array.isArray(speciesData)) {
+            processedData = speciesData.slice(0, 10); // Limit to top 10
+        } else if (typeof speciesData === 'object') {
+            // Convert taxonomic_classification object to array format
+            processedData = Object.entries(speciesData).map(([otu, info]) => ({
+                species: otu,
+                total_sequences: info.num_sequences || info.count || 1
+            })).slice(0, 10);
+        }
 
-        const labels = topSpecies.map(item => {
-            const name = item.species || item.species_name || 'Unknown';
+        const labels = processedData.map(item => {
+            const name = item.species || item.species_name || item.otu || 'Unknown';
             return name.length > 20 ? name.substring(0, 17) + '...' : name;
         });
-
-        const data = topSpecies.map(item => item.total_sequences || item.total_count || 0);
+        
+        const data = processedData.map(item => 
+            item.total_sequences || item.total_count || item.count || 0
+        );
 
         this.charts.species.data.labels = labels;
         this.charts.species.data.datasets[0].data = data;
@@ -304,109 +306,126 @@ class BiodiversityDashboard {
         if (!analyses || analyses.length === 0) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="7" style="text-align: center; padding: 2rem; color: #666;">
-                        No analyses found. Upload your first eDNA sample to get started!
+                    <td colspan="7" style="text-align: center; color: #666; padding: 2rem;">
+                        No recent analyses found. Upload a FASTA file to get started!
                     </td>
                 </tr>
             `;
             return;
         }
 
-        // Add analysis rows
+        // Populate table with analyses
         analyses.forEach(analysis => {
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td>${this.truncateFilename(analysis.filename || 'Unknown')}</td>
-                <td>${this.formatDateTime(analysis.timestamp || analysis.upload_timestamp)}</td>
+                <td>${analysis.filename || 'Unknown'}</td>
+                <td>${new Date(analysis.timestamp).toLocaleDateString()}</td>
                 <td>${analysis.total_sequences || 0}</td>
-                <td>${analysis.unique_taxa || analysis.unique_taxa_count || 0}</td>
-                <td>${analysis.novel_species || analysis.novel_species_count || 0}</td>
+                <td>${analysis.taxa_found || 0}</td>
+                <td>${analysis.novel_species || 0}</td>
                 <td>${(analysis.shannon_index || 0).toFixed(3)}</td>
-                <td><span class="status-badge status-completed">${analysis.status || 'Completed'}</span></td>
+                <td><span class="status-badge status-completed">Completed</span></td>
             `;
             tbody.appendChild(row);
         });
     }
 
-    truncateFilename(filename) {
-        if (filename.length <= 25) return filename;
-        const parts = filename.split('.');
-        const ext = parts.pop();
-        const name = parts.join('.');
-        return name.substring(0, 20) + '...' + ext;
-    }
-
-    formatDateTime(timestamp) {
-        if (!timestamp) return 'Unknown';
-
-        try {
-            const date = new Date(timestamp);
-            return date.toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-        } catch (error) {
-            return 'Invalid date';
-        }
-    }
-
     setupAutoRefresh() {
         setInterval(() => {
-            this.loadDashboardData();
-        }, this.refreshInterval);
-
-        // Refresh when page becomes visible again
-        document.addEventListener('visibilitychange', () => {
-            if (!document.hidden) {
+            if (!document.hidden) { // Only refresh when page is visible
                 this.loadDashboardData();
             }
-        });
+        }, this.refreshInterval);
     }
 
     showErrorMessage(message) {
-        const container = document.querySelector('.container');
+        const existingError = document.querySelector('.error-message');
+        if (existingError) {
+            existingError.remove();
+        }
+
         const errorDiv = document.createElement('div');
         errorDiv.className = 'error-message';
-        errorDiv.innerHTML = `
-            <strong>⚠️ Error:</strong> ${message}
-            <button onclick="location.reload()" style="float: right; background: #721c24; color: white; border: none; padding: 0.3rem 0.8rem; border-radius: 4px; cursor: pointer;">
-                Reload Page
-            </button>
+        errorDiv.textContent = message;
+
+        const container = document.querySelector('.container');
+        if (container) {
+            container.insertBefore(errorDiv, container.firstChild);
+        }
+    }
+
+    // Method to update results from upload page
+    updateLatestResults(result) {
+        // Update taxonomic classification display
+        const classificationElement = document.getElementById('classification-json');
+        if (classificationElement) {
+            classificationElement.textContent = JSON.stringify(result.taxonomic_classification, null, 2);
+        }
+
+        // Update biodiversity metrics display
+        if (result.biodiversity_metrics) {
+            const shannonElement = document.getElementById('metric-shannon');
+            const simpsonElement = document.getElementById('metric-simpson');
+            const phyloElement = document.getElementById('metric-phylo');
+
+            if (shannonElement) shannonElement.textContent = result.biodiversity_metrics.shannon_diversity.toFixed(3);
+            if (simpsonElement) simpsonElement.textContent = result.biodiversity_metrics.simpson_index.toFixed(3);
+            if (phyloElement) phyloElement.textContent = result.biodiversity_metrics.phylogenetic_diversity.toFixed(3);
+        }
+
+        // Update species chart with new data
+        if (result.taxonomic_classification) {
+            this.updateSpeciesChart(result.taxonomic_classification);
+        }
+    }
+}
+
+// Global function for upload page integration
+function showResults(result) {
+    const progressContainer = document.getElementById('progress-container');
+    const resultsPreview = document.getElementById('results-preview');
+    const quickStats = document.getElementById('quick-stats');
+
+    // Hide progress, show results
+    if (progressContainer) progressContainer.style.display = 'none';
+    if (resultsPreview) resultsPreview.style.display = 'block';
+
+    // Populate quick stats using the correct API response structure
+    if (quickStats) {
+        quickStats.innerHTML = `
+            <div class="quick-stat">
+                <div class="quick-stat-number">${result.total_sequences}</div>
+                <div class="quick-stat-label">Sequences</div>
+            </div>
+            <div class="quick-stat">
+                <div class="quick-stat-number">${Object.keys(result.taxonomic_classification || {}).length}</div>
+                <div class="quick-stat-label">OTUs</div>
+            </div>
+            <div class="quick-stat">
+                <div class="quick-stat-number">${(result.biodiversity_metrics?.shannon_diversity || 0).toFixed(2)}</div>
+                <div class="quick-stat-label">Shannon Index</div>
+            </div>
+            <div class="quick-stat">
+                <div class="quick-stat-number">${(result.biodiversity_metrics?.simpson_index || 0).toFixed(2)}</div>
+                <div class="quick-stat-label">Simpson Index</div>
+            </div>
         `;
+    }
 
-        container.insertBefore(errorDiv, container.firstChild);
-
-        // Auto-remove after 10 seconds
-        setTimeout(() => {
-            if (errorDiv.parentNode) {
-                errorDiv.parentNode.removeChild(errorDiv);
-            }
-        }, 10000);
+    // If dashboard instance exists, update it with new results
+    if (window.dashboardInstance) {
+        window.dashboardInstance.updateLatestResults(result);
     }
 }
 
 // Initialize dashboard when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    new BiodiversityDashboard();
+    window.dashboardInstance = new BiodiversityDashboard();
 });
 
-// Health check function
-async function checkSystemHealth() {
-    try {
-        const response = await fetch('/health');
-        const health = await response.json();
-
-        if (health.status === 'healthy') {
-            console.log('✅ System health check passed');
-        } else {
-            console.warn('⚠️ System health check warning:', health);
-        }
-    } catch (error) {
-        console.error('❌ System health check failed:', error);
+// Handle visibility change for efficient auto-refresh
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && window.dashboardInstance) {
+        window.dashboardInstance.loadDashboardData();
     }
-}
-
-// Run health check every 5 minutes
-setInterval(checkSystemHealth, 300000);
+});

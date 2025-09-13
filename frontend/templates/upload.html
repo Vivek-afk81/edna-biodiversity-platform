@@ -365,7 +365,7 @@
                     <div class="upload-text">Drop your FASTA file here</div>
                     <div class="upload-hint">or click to browse files</div>
                     <button type="button" class="browse-btn">Choose File</button>
-                    <input type="file" id="file-input" class="file-input" accept=".fasta,.fa,.fas,.txt" required>
+                    <input type="file" id="file-input" class="file-input" name="fasta_file" accept=".fasta,.fa,.fas,.txt" required>
                 </div>
             </form>
 
@@ -492,9 +492,9 @@
             resultsPreview.style.display = 'none';
 
             try {
-                // Prepare form data
+                // Prepare form data with correct key name
                 const formData = new FormData();
-                formData.append('file', selectedFile);
+                formData.append('fasta_file', selectedFile);
 
                 // Start analysis
                 progressText.textContent = 'Uploading file...';
@@ -541,23 +541,23 @@
             progressContainer.style.display = 'none';
             resultsPreview.style.display = 'block';
 
-            // Populate quick stats
+            // Populate quick stats using the correct API response structure
             quickStats.innerHTML = `
                 <div class="quick-stat">
                     <div class="quick-stat-number">${result.total_sequences}</div>
                     <div class="quick-stat-label">Sequences</div>
                 </div>
                 <div class="quick-stat">
-                    <div class="quick-stat-number">${result.biodiversity_metrics.indices.species_richness || 0}</div>
-                    <div class="quick-stat-label">Species</div>
+                    <div class="quick-stat-number">${Object.keys(result.taxonomic_classification || {}).length}</div>
+                    <div class="quick-stat-label">OTUs</div>
                 </div>
                 <div class="quick-stat">
-                    <div class="quick-stat-number">${result.biodiversity_metrics.marine_metrics.novel_species_discovered || 0}</div>
-                    <div class="quick-stat-label">Novel Taxa</div>
-                </div>
-                <div class="quick-stat">
-                    <div class="quick-stat-number">${(result.biodiversity_metrics.indices.shannon_diversity || 0).toFixed(2)}</div>
+                    <div class="quick-stat-number">${(result.biodiversity_metrics?.shannon_diversity || 0).toFixed(2)}</div>
                     <div class="quick-stat-label">Shannon Index</div>
+                </div>
+                <div class="quick-stat">
+                    <div class="quick-stat-number">${(result.biodiversity_metrics?.simpson_index || 0).toFixed(2)}</div>
+                    <div class="quick-stat-label">Simpson Index</div>
                 </div>
             `;
         }

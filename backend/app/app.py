@@ -1,3 +1,10 @@
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+from blast_helper import BlastHelper
+from models import get_database
+
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from datetime import datetime
@@ -7,10 +14,6 @@ import time
 from backend.app.embedding import SequenceEmbedder
 from backend.app.clustering import HDBSCANClusterer 
 from backend.annotator import Annotator
-from backend.app.classifier import UnsupervisedClassifier
-from backend.app.ai_pipeline.unsupervised import UnsupervisedLearningPipeline
-from backend.app.ai_pipeline.feature_extraction import FeatureExtractor
-
 
 # === Import Mock Fallback ===
 from backend.app.classifier import MockSpeciesClassifier 
@@ -18,17 +21,22 @@ from backend.app.classifier import MockSpeciesClassifier
 app = Flask(__name__)
 CORS(app)
 
-# Initialize pipeline
+# Initialize components
 embedder = SequenceEmbedder()
-clusterer = HDBSCANClusterer()
+clusterer = HDBSCANClusterer(min_cluster_size=2, min_samples=1)
 annotator = Annotator()
 
-
-# --- API Routes ---
 @app.route('/api/health', methods=['GET'])
 def health_check():
     return jsonify({"status": "ok"})
 
+@app.before_first_request
+def create_database():
+    """Create our database when the app starts"""
+    print("Setting up the database...")
+    session, engine = get_database()
+    session.close()
+    print("Database ready!")
 
 @app.route('/api/analyze', methods=['POST'])
 def analyze_sequence():
@@ -38,38 +46,52 @@ def analyze_sequence():
     """
     start_time = time.time()
 
-    # ✅ 1. Parse Input
+    # 1. Parse Input
     if 'fasta_file' not in request.files:
         return jsonify({"error": "No FASTA file uploaded"}), 400
 
     file = request.files['fasta_file']
-    sequences = [line.strip() for line in file if not line.startswith(">")]
+    # Read lines, decode bytes to str if necessary
+    content = file.read().decode('utf-8').splitlines()
+    sequences = [line.strip() for line in content if line and not line.startswith(">")]
     if not sequences:
         return jsonify({"error": "No sequences found in FASTA"}), 400
 
-    # ✅ 2. Try AI pipeline
+    # 2. Try AI pipeline
     try:
+        # 2a. Generate embeddings
         embeddings = embedder.encode_sequences(sequences)
-        otu_clusters = clusterer.cluster_embeddings(embeddings)
-        annotated_otus = annotator.annotate_clusters(otu_clusters, sequences)
 
-        classification_results = annotated_otus  # replace Mock output
+        # 2b. Cluster embeddings into OTUs
+        cluster_labels = clusterer.fit_predict(embeddings)
+        clusters = {}
+        for idx, label in enumerate(cluster_labels):
+            if label == -1:
+                continue  # skip noise
+            key = f"OTU_{label}"
+            clusters.setdefault(key, []).append(idx)
+
+        # 2c. Annotate clusters
+        annotated_otus = annotator.annotate_clusters(clusters, sequences)
+        classification_results = annotated_otus
 
     except Exception as e:
         print("⚠️ AI pipeline failed, falling back to MockSpeciesClassifier:", str(e))
         mock = MockSpeciesClassifier()
         classification_results = mock.classify_sequences(sequences)
 
-    # ✅ 3. Compute Biodiversity Metrics
-    shannon = round(len(set(sequences)) * 0.8, 3)  # placeholder
-    simpson = round(1 - (1 / (1 + len(sequences))), 3)
-    phylogenetic_div = round(len(sequences) ** 0.5, 3)
+    # 3. Compute Biodiversity Metrics
+    unique_count = len(set(sequences))
+    total = len(sequences)
+    shannon = round(unique_count * 0.8, 3)   # placeholder
+    simpson = round(1 - (1 / (1 + total)), 3)
+    phylogenetic_div = round(total ** 0.5, 3)
 
-    # ✅ 4. Prepare Results (Dashboard Compatible)
+    # 4. Prepare Results
     results = {
-        "analysis_id": None,  # Add DB integration later if needed
+        "analysis_id": None,
         "filename": file.filename,
-        "total_sequences": len(sequences),
+        "total_sequences": total,
         "processing_time_seconds": round(time.time() - start_time, 2),
         "taxonomic_classification": classification_results,
         "biodiversity_metrics": {
@@ -77,12 +99,11 @@ def analyze_sequence():
             "simpson_index": simpson,
             "phylogenetic_diversity": phylogenetic_div
         },
-        "species_distribution": classification_results,  # frontend expects this
+        "species_distribution": classification_results,
         "timestamp": datetime.now().isoformat()
     }
 
     return jsonify(results)
-
 
 if __name__ == '__main__':
     app.run(debug=True)
