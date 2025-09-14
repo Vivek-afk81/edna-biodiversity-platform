@@ -21,7 +21,7 @@ class Annotator:
             Entrez.email = email
         self.blast_helper = BlastHelper()
 
-    def annotate_clusters(self, clusters):
+    def annotate_clusters(self, clusters, sequences):
         """
         Annotate groups of DNA sequences using BlastHelper.
         """
@@ -34,7 +34,7 @@ class Annotator:
             print(f"\nLooking at {cluster_name}...")
 
             # Pick one DNA sequence from each group (the representative)
-            representative_sequence = self._pick_best_representative(sequence_indices)
+            representative_sequence = self._pick_best_representative(sequence_indices, sequences)
 
             # Ask our BLAST helper what creature this DNA belongs to
             lineage, confidence = self.blast_helper.identify_sequence(representative_sequence)
@@ -51,12 +51,29 @@ class Annotator:
 
         return annotations
 
-    def _pick_best_representative(self, sequence_indices):
+    def _pick_best_representative(self, sequence_indices, sequences):
         """
         Pick the best DNA sequence from a group.
-        For now, just return a placeholder.
+        Selects the sequence with the highest GC content as representative.
         """
-        return "ATCGATCGATCGATCGATCG"
+        if not sequence_indices:
+            return "ATCGATCGATCGATCGATCG"  # fallback
+
+        # Get the actual sequences from indices
+        cluster_sequences = [sequences[i] for i in sequence_indices]
+
+        # Calculate GC content for each sequence
+        gc_contents = []
+        for seq in cluster_sequences:
+            seq_upper = seq.upper()
+            gc_count = seq_upper.count('G') + seq_upper.count('C')
+            total_bases = len(seq_upper.replace('N', ''))
+            gc_content = (gc_count / total_bases) * 100 if total_bases > 0 else 0
+            gc_contents.append(gc_content)
+
+        # Pick the sequence with the highest GC content
+        best_index = gc_contents.index(max(gc_contents))
+        return cluster_sequences[best_index]
 
     def get_lineage(self, sequence: str):
         """
