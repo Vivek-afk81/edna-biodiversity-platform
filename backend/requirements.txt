@@ -3,7 +3,7 @@ Flask==3.0.0
 Flask-CORS==4.0.0
 werkzeug==3.0.0
 
-# Production server
+# Production serverw
 gunicorn==21.2.0
 
 # File processing and bioinformatics

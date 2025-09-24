@@ -16,7 +16,9 @@ from backend.app.clustering import HDBSCANClusterer
 from backend.annotator import Annotator
 
 # === Import Mock Fallback ===
-from backend.app.classifier import MockSpeciesClassifier 
+# from backend.app.classifier import MockSpeciesClassifier 
+from backend.app.classifier import classify_sequences_fallback
+
 
 app = Flask(__name__)
 CORS(app)
@@ -77,8 +79,8 @@ def analyze_sequence():
 
     except Exception as e:
         print("⚠️ AI pipeline failed, falling back to MockSpeciesClassifier:", str(e))
-        mock = MockSpeciesClassifier()
-        classification_results = mock.classify_sequences(sequences)
+        classification_results = classify_sequences_fallback([{"sequence": seq} for seq in sequences])
+
 
     # 3. Compute Biodiversity Metrics
     unique_count = len(set(sequences))
