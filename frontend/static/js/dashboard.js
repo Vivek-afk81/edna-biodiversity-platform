@@ -9,6 +9,9 @@ class BiodiversityDashboard {
         this.charts = {};
         this.refreshInterval = 30000; // 30 seconds
         this.isLoading = false;
+        this.networkLoading = false;
+        this.networkData = null;
+        this.network = null; // Vis.js network instance
         this.init();
     }
 
@@ -355,7 +358,7 @@ class BiodiversityDashboard {
     }
 
     // Method to update results from upload page
-    updateLatestResults(result) {
+    async updateLatestResults(result) {
         // Update taxonomic classification display
         const classificationElement = document.getElementById('classification-json');
         if (classificationElement) {
@@ -377,6 +380,137 @@ class BiodiversityDashboard {
         if (result.taxonomic_classification) {
             this.updateSpeciesChart(result.taxonomic_classification);
         }
+
+        // Fetch and update species network analysis
+        if (result.taxonomic_classification) {
+            await this.fetchNetworkAnalysis(result.taxonomic_classification);
+        }
+    }
+
+    async fetchNetworkAnalysis(classificationResults) {
+        if (this.networkLoading) return;
+        this.networkLoading = true;
+
+        const loadingElem = document.getElementById('network-loading');
+        const errorElem = document.getElementById('network-error');
+        const graphContainer = document.getElementById('network-graph');
+        const metricsTotalSpecies = document.getElementById('network-total-species');
+        const metricsTotalInteractions = document.getElementById('network-total-interactions');
+        const metricsDensity = document.getElementById('network-density');
+        const insightsList = document.getElementById('ecological-insights-list');
+
+        // Reset UI
+        errorElem.style.display = 'none';
+        loadingElem.style.display = 'block';
+        graphContainer.innerHTML = '';
+        metricsTotalSpecies.textContent = '-';
+        metricsTotalInteractions.textContent = '-';
+        metricsDensity.textContent = '-';
+        insightsList.innerHTML = '';
+
+        try {
+            const response = await fetch('/api/network', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ classification_results: classificationResults })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            this.networkData = data;
+
+            // Render network graph
+            this.renderNetworkGraph(data.visualization_data);
+
+            // Update metrics panel
+            metricsTotalSpecies.textContent = data.summary.total_species || '-';
+            metricsTotalInteractions.textContent = data.summary.total_interactions || '-';
+            metricsDensity.textContent = data.summary.network_density || '-';
+
+            // Render ecological insights
+            if (Array.isArray(data.ecological_insights)) {
+                data.ecological_insights.forEach(insight => {
+                    const li = document.createElement('li');
+                    li.textContent = insight;
+                    insightsList.appendChild(li);
+                });
+            }
+
+        } catch (error) {
+            console.error('Species network analysis failed:', error);
+            errorElem.style.display = 'block';
+        } finally {
+            loadingElem.style.display = 'none';
+            this.networkLoading = false;
+        }
+    }
+
+    renderNetworkGraph(visualizationData) {
+        const container = document.getElementById('network-graph');
+        if (!container || !visualizationData) return;
+
+        // Prepare nodes and edges for Vis.js
+        const nodes = new vis.DataSet(
+            (visualizationData.nodes || []).map(node => ({
+                id: node.id,
+                label: node.label || node.id,
+                title: node.title || '',
+                group: node.group || undefined
+            }))
+        );
+
+        const edges = new vis.DataSet(
+            (visualizationData.edges || []).map(edge => ({
+                from: edge.from,
+                to: edge.to,
+                label: edge.label || '',
+                title: edge.title || '',
+                arrows: edge.arrows || 'to'
+            }))
+        );
+
+        // Network options
+        const options = {
+            nodes: {
+                shape: 'dot',
+                size: 16,
+                font: {
+                    size: 12,
+                    color: '#333'
+                },
+                borderWidth: 2,
+                shadow: true
+            },
+            edges: {
+                width: 2,
+                shadow: true,
+                arrows: {
+                    to: { enabled: true, scaleFactor: 0.5 }
+                }
+            },
+            physics: {
+                enabled: true,
+                barnesHut: {
+                    gravitationalConstant: -2000,
+                    centralGravity: 0.3,
+                    springLength: 95,
+                    springConstant: 0.04,
+                    damping: 0.09,
+                    avoidOverlap: 0
+                }
+            },
+            interaction: {
+                hover: true,
+                tooltipDelay: 200
+            }
+        };
+
+        // Create network
+        const data = { nodes: nodes, edges: edges };
+        this.network = new vis.Network(container, data, options);
     }
 }
 

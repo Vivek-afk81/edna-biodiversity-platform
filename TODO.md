@@ -1,21 +1,11 @@
-# Biodiversity Chart and Graph Fix - TODO List
-
-## Current Status
-- [x] Analyze biodiversity.py and chart rendering issues
-- [x] Identify key mismatch in biodiversity trends data keys
-- [x] Fix backend data format to match frontend expectations
-- [x] Add error handling for empty data scenarios
-- [x] Update dashboard.js to handle data format variations
+# TODO: Integrate /api/network endpoint into frontend
 
 ## Completed Tasks
-- [x] Verified backend /api/dashboard-data endpoint returns correct data structure
-- [x] Confirmed species_distribution data format compatibility
-- [x] Ensured biodiversity_trends keys match frontend expectations
-- [x] Added fallback handling in dashboard.js for missing data
-- [x] Improved error messages for chart rendering failures
+- [x] Analyze existing frontend code and structure
+- [x] Create integration plan
+- [x] Get user approval for plan
+- [x] Edit frontend/templates/dashboard.html: Add Vis.js CDN and new UI sections (Network Graph, Network Metrics, Ecological Insights)
+- [x] Edit frontend/static/js/dashboard.js: Add fetchNetworkAnalysis method, rendering methods for graph/metrics/insights, loading state, error handling, and integrate call after classification results
 
-## Issues Resolved
-- Fixed potential key mismatch between backend 'avg_shannon' and frontend 'shannon_values' (both use 'shannon_values')
-- Added error handling in dashboard.js for empty or malformed data
-- Ensured chart initialization handles missing canvas elements
-- Verified database query returns expected data format
+## Pending Tasks
+- [ ] Test the integration: Verify network request, UI updates, and Vis.js graph rendering
